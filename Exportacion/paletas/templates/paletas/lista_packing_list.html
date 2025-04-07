@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Lista de Packing List{% endblock %}
+{% block content %}
+<h2>Lista de Packing List</h2>
+<a href="{% url 'packing_list_manual' %}" class="btn btn-primary mb-3">Crear Nuevo Packing List</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nombre (Código)</th>
+            <th>Fecha de Creación</th>
+            <th>Total Peso Neto KG</th>
+            <th>Total Peso Neto LB</th>
+            <th>Total Peso Bruto KG</th>
+            <th>Total Peso Bruto LB</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pl in packing_lists %}
+        <tr>
+            <td>{{ pl.nombre }}</td>
+            <td>{{ pl.fecha_creacion|date:"Y-m-d" }}</td>
+            <td>{{ pl.peso_neto_kg }}</td>
+            <td>{{ pl.peso_neto_lb }}</td>
+            <td>{{ pl.peso_bruto_kg }}</td>
+            <td>{{ pl.peso_bruto_lb }}</td>
+            <td>
+                <a href="{% url 'imprimir_packing_list' pk=pl.id %}" class="btn btn-info btn-sm">Imprimir Packing List</a>
+                <a href="{% url 'editar_packing_list' pk=pl.id %}" class="btn btn-warning btn-sm">Editar</a>
+                <a href="{% url 'eliminar_packing_list' pk=pl.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No hay Packing List creados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Generar Packing List Manual{% endblock %}
+{% block content %}
+<h2>Generar Packing List Manual</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="codigos">Ingrese los códigos de las paletas (separados por comas):</label>
+        <input type="text" class="form-control" id="codigos" name="codigos">
+    </div>
+    <!-- En este formulario, opcionalmente se pueden agregar otras opciones o mostrar las paletas disponibles. -->
+    <button type="submit" class="btn btn-primary">Guardar Packing List y Generar PDF</button>
+</form>
+{% endblock %}

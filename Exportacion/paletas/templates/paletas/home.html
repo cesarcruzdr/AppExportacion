@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<h2>Listado de Paletas</h2>
+<a href="{% url 'agregar_paleta' %}" class="btn btn-primary mb-3">Agregar Nueva Paleta</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Código de Paleta</th>
+            <th>Tipo de Batería</th>
+            <th>Peso Neto LB</th>
+            <th>Peso Neto KG</th>
+            <th>Peso Bruto LB</th>
+            <th>Peso Bruto KG</th>
+            <th>Fecha Creación</th>
+            <th>Usuario</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for paleta in paletas %}
+        <tr>
+            <td>{{ paleta.id }}</td>
+            <td>{{ paleta.codigo_barra }}</td>
+            <td>{{ paleta.get_tipo_bateria_display }}</td>
+            <td>{{ paleta.peso_lb }}</td>
+            <td>{{ paleta.peso_kg }}</td>
+            <td>{{ paleta.peso_bruto_lb }}</td>
+            <td>{{ paleta.peso_bruto_kg }}</td>
+            <td>{{ paleta.fecha_creacion|date:"Y-m-d" }}</td>
+            <td>{{ paleta.usuario_creador }}</td>
+            <td>
+                <a href="{% url 'imprimir_etiqueta' paleta_id=paleta.id %}" class="btn btn-success btn-sm">Imprimir Etiqueta</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="10">No hay paletas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<hr>
+<!-- Enlaces para Packing List -->
+<a href="{% url 'packing_list_manual' %}" class="btn btn-info">Generar Packing List Manual</a>
+<a href="{% url 'lista_packing_list' %}" class="btn btn-secondary">Ver Lista de Packing List</a>
+{% endblock %}
