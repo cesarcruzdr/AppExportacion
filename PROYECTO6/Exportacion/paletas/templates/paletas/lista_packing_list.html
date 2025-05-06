@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load humanize%}
+
+{% block title %}Lista de Packing List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold">📄 Lista de Packing List</h2>
+        <a href="{% url 'packing_list_manual' %}" class="btn btn-primary">
+            ➕ Crear Nuevo
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm border">
+            <thead class="thead-light">
+                <tr>
+                    <th>📦 Nombre (Código)</th>
+                    <th>📅 Fecha</th>
+                    <th class="text-end">Peso Neto KG</th>
+                    <th class="text-end">Peso Neto LB</th>
+                    <th class="text-end">Peso Bruto KG</th>
+                    <th class="text-end">Peso Bruto LB</th>
+                    <th class="text-center">⚙️ Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pl in packing_lists %}
+                <tr>
+                    <td>{{ pl.nombre }}</td>
+                    <td>{{ pl.fecha_creacion|date:"Y-m-d" }}</td>
+                    <td class="text-end">{{ pl.peso_neto_kg|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ pl.peso_neto_lb|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ pl.peso_bruto_kg|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ pl.peso_bruto_lb|floatformat:2|intcomma}}</td>
+                    <td class="text-center">
+                        <a href="{% url 'imprimir_packing_list' pk=pl.id %}" class="btn btn-outline-info btn-sm me-1">🖨️</a>
+                        <a href="{% url 'editar_packing_list' pk=pl.id %}" class="btn btn-outline-warning btn-sm me-1">✏️</a>
+                        <a href="{% url 'eliminar_packing_list' pk=pl.id %}" class="btn btn-outline-danger btn-sm">🗑️</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No hay Packing List creados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
