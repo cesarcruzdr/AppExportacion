@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Packing List{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">✏️ Editar Packing List: {{ packing_list.nombre }}</h2>
+
+<!-- Mensajes de éxito o error -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Nombre del Packing List</label>
+        {{ form.nombre|add_class:"form-control" }}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Buscar paletas</label>
+        <input type="text" class="form-control mb-3" id="searchInput" placeholder="🔍 Buscar por código, tipo, usuario...">
+
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-bordered table-hover" id="paletaTable">
+                <thead class="table-light">
+                    <tr>
+                        <th></th>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Peso Neto KG</th>
+                        <th>Peso Neto LB</th>
+                        <th>Usuario</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paleta in todas_las_paletas %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="paletas" value="{{ paleta.id }}"
+                                   {% if paleta in packing_list.paletas.all %}checked{% endif %}>
+                        </td>
+                        <td>{{ paleta.id }}</td>
+                        <td>{{ paleta.codigo_barra }}</td>
+                        <td>{{ paleta.get_tipo_bateria_display }}</td>
+                        <td>{{ paleta.peso_neto_kg|floatformat:2|intcomma }}</td>
+                        <td>{{ paleta.peso_bruto_lb|floatformat:2|intcomma }}</td>
+                        <td>{{ paleta.usuario_creador }}</td>
+                        <td>{{ paleta.fecha_creacion|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">💾 Actualizar</button>
+    <a href="{% url 'lista_packing_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+<script>
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+        const search = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#paletaTable tbody tr");
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(search) ? "" : "none";
+        });
+    });
+</script>
+{% endblock %}

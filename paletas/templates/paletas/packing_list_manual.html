@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Generar Packing List Manual</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Formulario de escaneo -->
+  <form method="POST" class="mb-4" id="codigos-form">
+    {% csrf_token %}
+    <label for="codigo_input">Escanea paleta:</label>
+    <input type="text" id="codigo_input" class="form-control mb-2" autofocus placeholder="Escanea código">
+
+    <input type="hidden" name="codigos" id="codigos" value="{{ codigos_str|default:'' }}">
+
+    <!-- Lista visual de paletas escaneadas -->
+    <div id="codigo-list" class="mb-2">
+      {% if codigos_list %}
+        {% for codigo in codigos_list %}
+          {% for paleta in paletas %}
+            {% if paleta.codigo_barra == codigo %}
+              <div class="d-flex align-items-center mb-2" data-codigo="{{ paleta.codigo_barra }}">
+                <span class="badge bg-secondary me-2">
+                  <strong>{{ paleta.codigo_barra }}</strong>
+                </span>
+                <span class="me-3">Cantidad: {{ paleta.cantidad_baterias }}</span>
+                <span class="me-3">Neto: {{ paleta.peso_neto_kg|floatformat:2 }} kg</span>
+                <span class="me-3">Bruto: {{ paleta.peso_bruto_kg|floatformat:2 }} kg</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </form>
+
+  {% if preview %}
+    <h4>Resumen de Paletas Seleccionadas</h4>
+    <table class="table table-bordered table-sm">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cantidad</th>
+          <th>Neto (kg)</th>
+          <th>Neto (lb)</th>
+          <th>Bruto (kg)</th>
+          <th>Bruto (lb)</th>
+          <th>Eliminar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in paletas %}
+          <tr>
+            <td>{{ p.codigo_barra }}</td>
+            <td>{{ p.cantidad_baterias }}</td>
+            <td>{{ p.peso_neto_kg|floatformat:2|intcomma }}</td>
+            <td>{{ p.peso_neto_lb|floatformat:2|intcomma }}</td>
+            <td>{{ p.peso_bruto_kg|floatformat:2|intcomma }}</td>
+            <td>{{ p.peso_bruto_lb|floatformat:2|intcomma }}</td>
+            <td>
+              <form method="POST" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="codigos" value="{{ codigos_str }}">
+                <input type="hidden" name="eliminar_codigo" value="{{ p.codigo_barra }}">
+                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar paleta">🗑️</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mt-3">
+      <p><strong>Total Neto:</strong> {{ total_neto_kg|floatformat:2|intcomma }} kg / {{ total_neto_lb|floatformat:2|intcomma }} lb</p>
+      <p><strong>Total Bruto:</strong> {{ total_bruto_kg|floatformat:2|intcomma }} kg / {{ total_bruto_lb|floatformat:2|intcomma }} lb</p>
+      <p><strong>Total Baterías:</strong> {{ total_baterias|floatformat:2|intcomma }}</p>
+      <p><strong>Faltante para mínimo (54,500 lb):</strong> {{ faltante_minimo|floatformat:2|intcomma }} lb</p>
+      <p><strong>Margen restante hasta máximo (56,000 lb):</strong> {{ margen_restante|floatformat:2|intcomma }} lb</p>
+    </div>
+
+    <form method="POST" class="mt-3">
+      {% csrf_token %}
+      <input type="hidden" name="codigos" value="{{ codigos_str }}">
+      <input type="hidden" name="confirmar" value="1">
+      <button type="submit" class="btn btn-success">✅ Confirmar y Generar PDF</button>
+    </form>
+  {% endif %}
+</div>
+
+<!-- JavaScript para escaneo dinámico -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('codigo_input');
+    const codigosInput = document.getElementById('codigos');
+    const codigoList = document.getElementById('codigo-list');
+
+    input.focus();
+
+    input.addEventListener('input', function() {
+      const codigo = this.value.trim();
+      if (codigo.length >= 8) {
+        agregarCodigo(codigo);
+      }
+    });
+
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        agregarCodigo(this.value.trim());
+      }
+    });
+
+    function agregarCodigo(codigo) {
+      if (!codigo) return;
+
+      const existentes = codigosInput.value ? codigosInput.value.split(',') : [];
+      if (!existentes.includes(codigo)) {
+        existentes.push(codigo);
+        codigosInput.value = existentes.join(',');
+
+        input.value = '';
+        input.focus();
+
+        // 🚀 Submit automático para recargar con datos correctos
+        document.getElementById('codigos-form').submit();
+      }
+    }
+
+    window.removerCodigo = function(codigo) {
+      const existentes = codigosInput.value ? codigosInput.value.split(',') : [];
+      const nuevos = existentes.filter(c => c !== codigo);
+      codigosInput.value = nuevos.join(',');
+
+      const badgeToRemove = document.querySelector(`div[data-codigo="${codigo}"]`);
+      if (badgeToRemove) {
+        badgeToRemove.remove();
+      }
+    };
+  });
+</script>
+{% endblock %}

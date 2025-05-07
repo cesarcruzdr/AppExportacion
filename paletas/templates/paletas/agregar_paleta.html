@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Agregar Paleta{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">➕ Agregar Nueva Paleta</h5>
+    </div>
+    <div class="card-body">
+      <form id="paleta-form" action="" method="post">
+        {% csrf_token %}
+        {{ form.localidad.as_hidden }}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          {% if field.name != 'localidad' %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div class="text-danger small">{{ field.errors|striptags }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'home' %}" class="btn btn-secondary">🔙 Cancelar</a>
+          <button type="submit" class="btn btn-success" form="paleta-form">💾 Guardar Paleta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const kgField = document.getElementById('id_peso_bruto_kg');
+  const lbField = document.getElementById('id_peso_bruto_lb');
+  if (!kgField || !lbField) return;
+
+  const kgToLb = k => (k * 2.20462).toFixed(2);
+  const lbToKg = l => (l / 2.20462).toFixed(2);
+
+  kgField.addEventListener('input', e => {
+    const v = parseFloat(e.target.value.replace(',', '.'));
+    lbField.value = !isNaN(v) ? kgToLb(v) : '';
+  });
+  lbField.addEventListener('input', e => {
+    const v = parseFloat(e.target.value.replace(',', '.'));
+    kgField.value = !isNaN(v) ? lbToKg(v) : '';
+  });
+
+  // Inicializar si uno viene con valor
+  if (kgField.value && !lbField.value) {
+    const v = parseFloat(kgField.value.replace(',', '.'));
+    if (!isNaN(v)) lbField.value = kgToLb(v);
+  } else if (lbField.value && !kgField.value) {
+    const v = parseFloat(lbField.value.replace(',', '.'));
+    if (!isNaN(v)) kgField.value = lbToKg(v);
+  }
+});
+</script>
+{% endblock %}
